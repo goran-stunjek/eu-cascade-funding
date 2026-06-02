@@ -1,0 +1,3969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cascade Funding Library</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; color: #222; }
+    .notif-badge { position: fixed; top: 18px; right: 24px; padding: 8px 16px; border-radius: 20px;
+                   font-size: 0.85em; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                   z-index: 999; cursor: default; }
+    .notif-badge.has-new  { background: #166534; color: #fff; }
+    .notif-badge.no-new   { background: #e5e7eb; color: #6b7280; }
+    h1 { color: #003399; }
+    .summary { background: #f0f4ff; padding: 12px 18px; border-radius: 6px; margin-bottom: 16px; }
+
+    /* Sort & filter bar */
+    .bar { margin-bottom: 10px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .bar-label { font-size: 0.85em; color: #555; margin-right: 4px; white-space: nowrap; }
+    .btn { padding: 4px 12px; border: 1px solid #aab; border-radius: 4px; background: #fff;
+           cursor: pointer; font-size: 0.82em; color: #333; }
+    .btn.active { background: #003399; color: #fff; border-color: #003399; }
+    .cat-btn.active { color: #fff; border-color: transparent; }
+
+    /* Call cards */
+    .call { border: 1px solid #ccd; border-radius: 6px; padding: 16px; margin-bottom: 14px; }
+    .call.hidden { display: none; }
+    .call h3 { margin: 0 0 8px; color: #003399; font-size: 1em; }
+    .meta { font-size: 0.83em; color: #555; margin-bottom: 5px; }
+    .meta span { margin-right: 18px; }
+
+    /* Status badges */
+    .badge-new    { background: #d4edda; color: #155724; padding: 2px 7px; border-radius: 4px; font-size: 0.76em; font-weight: bold; }
+    .badge-closed { background: #f8d7da; color: #721c24; padding: 2px 7px; border-radius: 4px; font-size: 0.76em; font-weight: bold; }
+    .badge-urgent { background: #f8d7da; color: #721c24; padding: 2px 7px; border-radius: 4px; font-size: 0.76em; font-weight: bold; }
+    .badge-soon   { background: #fff3cd; color: #856404; padding: 2px 7px; border-radius: 4px; font-size: 0.76em; font-weight: bold; }
+    .badge-open   { background: #d4edda; color: #155724; padding: 2px 7px; border-radius: 4px; font-size: 0.76em; font-weight: bold; }
+
+    /* Category badge */
+    .cat-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 0.76em; font-weight: bold; margin-left: 4px; }
+
+    a { color: #003399; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  
+  <div class="notif-badge has-new">&#x1F514; 1 new call(s) today</div>
+  
+  <h1>EU Cascade Funding Library</h1>
+  <div class="summary">
+    <strong>Last updated:</strong> 2026-06-02 &nbsp;|&nbsp;
+    <strong>Total calls:</strong> 117 &nbsp;|&nbsp;
+    <strong>New today:</strong> 1
+  </div>
+
+  <!-- Sort bar -->
+  <div class="bar">
+    <span class="bar-label">Sort:</span>
+    <button class="btn active" onclick="sortCalls('new', this)">New first</button>
+    <button class="btn"        onclick="sortCalls('asc', this)">Closest deadline</button>
+    <button class="btn"        onclick="sortCalls('desc', this)">Farthest deadline</button>
+  </div>
+
+  <!-- Category filter bar -->
+  <div class="bar" id="cat-filter-bar">
+    <span class="bar-label">Category:</span>
+    <button class="btn cat-btn active" data-cat="all" onclick="filterCat('all', this)"
+            style="background:#003399;color:#fff;border-color:#003399;">All</button>
+    
+    
+    <button class="btn cat-btn" data-cat="AI & Digital Technologies" onclick="filterCat('AI & Digital Technologies', this)"
+            style="background:#1d4ed8;color:#fff;border-color:transparent;">
+      AI & Digital Technologies
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Civil Society & Democracy" onclick="filterCat('Civil Society & Democracy', this)"
+            style="background:#be185d;color:#fff;border-color:transparent;">
+      Civil Society & Democracy
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Clean Energy & Climate" onclick="filterCat('Clean Energy & Climate', this)"
+            style="background:#166534;color:#fff;border-color:transparent;">
+      Clean Energy & Climate
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Cybersecurity" onclick="filterCat('Cybersecurity', this)"
+            style="background:#991b1b;color:#fff;border-color:transparent;">
+      Cybersecurity
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Education & Digital Skills" onclick="filterCat('Education & Digital Skills', this)"
+            style="background:#6d28d9;color:#fff;border-color:transparent;">
+      Education & Digital Skills
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Food, Agriculture & Bioeconomy" onclick="filterCat('Food, Agriculture & Bioeconomy', this)"
+            style="background:#92400e;color:#fff;border-color:transparent;">
+      Food, Agriculture & Bioeconomy
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Health & Life Sciences" onclick="filterCat('Health & Life Sciences', this)"
+            style="background:#0e7490;color:#fff;border-color:transparent;">
+      Health & Life Sciences
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Industry, Manufacturing & SMEs" onclick="filterCat('Industry, Manufacturing & SMEs', this)"
+            style="background:#c2410c;color:#fff;border-color:transparent;">
+      Industry, Manufacturing & SMEs
+    </button>
+    
+    <button class="btn cat-btn" data-cat="Marine & Mobility" onclick="filterCat('Marine & Mobility', this)"
+            style="background:#1e40af;color:#fff;border-color:transparent;">
+      Marine & Mobility
+    </button>
+    
+  </div>
+
+  <div id="calls-container">
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-08"
+         data-closed="false"
+         data-new="true"
+         data-cat="Marine & Mobility">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14501?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">RIS Education Open Call 2027</a>
+        <span class="badge-new">NEW</span>
+        
+          
+            <span class="badge-open">98d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1e40af;color:#fff;">
+          Marine & Mobility › Urban Mobility
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14501COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> RIS Education Open Call 2027</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 08/09/2026 17:00</span>
+        <span><strong>Budget:</strong> €2.6M</span>
+        <span><strong>First seen:</strong> 2026-06-02</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-04-08"
+         data-closed="true"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/10304?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">BOOST Call for Proposals</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Startup & Entrepreneurship
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 10304COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> BOOST Call for Proposals</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 06/03/2025 00:00</span>
+        <span><strong>Deadline:</strong> 08/04/2025 17:00</span>
+        <span><strong>Budget:</strong> €5.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-08-20"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11142?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call No. 1 for proposals for NGOs to participate in capacity building and receive financial support</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Union Values & CSO Support
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11142COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Call No. 1 for proposals for NGOs to participate in capacity building and receive financial support</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 10/06/2025 00:00</span>
+        <span><strong>Deadline:</strong> 20/08/2025 00:59</span>
+        <span><strong>Budget:</strong> €600,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-09-02"
+         data-closed="true"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11143?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">METU Internships Offer</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Internships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11143COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> METU Internships Offer</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/06/2025 00:00</span>
+        <span><strong>Deadline:</strong> 02/09/2025 03:59</span>
+        <span><strong>Budget:</strong> €30,500</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-09-02"
+         data-closed="true"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11145?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Gnomon Internships Offer</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Internships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11145COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Gnomon Internships Offer</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/06/2025 00:00</span>
+        <span><strong>Deadline:</strong> 02/09/2025 04:59</span>
+        <span><strong>Budget:</strong> €120,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-09-07"
+         data-closed="true"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11265?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">UPC-GREENCHIPS-EDU Scholarship</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11265COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> UPC-GREENCHIPS-EDU Scholarship</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 02/07/2025 00:00</span>
+        <span><strong>Deadline:</strong> 07/09/2025 23:59</span>
+        <span><strong>Budget:</strong> €40,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-09-23"
+         data-closed="true"
+         data-new="false"
+         data-cat="Marine & Mobility">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11164?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Strategic Innovation Open call</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1e40af;color:#fff;">
+          Marine & Mobility › Urban Mobility
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11164COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Strategic Innovation Open call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 19/06/2025 00:00</span>
+        <span><strong>Deadline:</strong> 23/09/2025 17:00</span>
+        <span><strong>Budget:</strong> €60.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-09-30"
+         data-closed="true"
+         data-new="false"
+         data-cat="Marine & Mobility">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11264?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Urban Mobility Explained (UMX) Open Call (Multi-cut-off)</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1e40af;color:#fff;">
+          Marine & Mobility › Urban Mobility
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11264COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Urban Mobility Explained (UMX) Open Call (Multi-cut-off)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 02/07/2025 00:00</span>
+        <span><strong>Deadline:</strong> 30/09/2025 17:00</span>
+        <span><strong>Budget:</strong> €4.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-10-31"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11781?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Experience sharing grants</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Union Values & CSO Support
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11781COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Experience sharing grants</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 18/09/2025 00:00</span>
+        <span><strong>Deadline:</strong> 31/10/2025 12:00</span>
+        <span><strong>Budget:</strong> €69,460</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-10-31"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11782?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Rapid Response Grants</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Emergency Response
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11782COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Rapid Response Grants</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 18/09/2025 00:00</span>
+        <span><strong>Deadline:</strong> 31/10/2025 12:00</span>
+        <span><strong>Budget:</strong> €312,673</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-10-31"
+         data-closed="true"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11321?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">DIGITWIN4CIUE Reduction-Fees Scholarships</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11321COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> DIGITWIN4CIUE Reduction-Fees Scholarships</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/07/2025 00:00</span>
+        <span><strong>Deadline:</strong> 31/10/2025 17:00</span>
+        <span><strong>Budget:</strong> €100,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-11-17"
+         data-closed="true"
+         data-new="false"
+         data-cat="Marine & Mobility">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11668?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Digitalisation and Innovation for Resilient Marine Ecosystems Businesses, and Communities to Strengthen the EU Blue Economy’s Competitiveness</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1e40af;color:#fff;">
+          Marine & Mobility › Blue Economy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11668COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Digitalisation and Innovation for Resilient Marine Ecosystems Businesses, and Communities to Strengthen the EU Blue Economy’s Competitiveness</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 15/09/2025 00:00</span>
+        <span><strong>Deadline:</strong> 17/11/2025 15:00</span>
+        <span><strong>Budget:</strong> €43.5M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2025-11-18"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11822?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call No. 2 for proposals for NGOs to participate in capacity building and receive financial support</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Union Values & CSO Support
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11822COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Call No. 2 for proposals for NGOs to participate in capacity building and receive financial support</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 23/09/2025 00:00</span>
+        <span><strong>Deadline:</strong> 18/11/2025 23:59</span>
+        <span><strong>Budget:</strong> €300,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-01-21"
+         data-closed="true"
+         data-new="false"
+         data-cat="Health & Life Sciences">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12163?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Understanding and Preventing Overweight and Obesity: Mechanisms of their onset and progression, neglected determinants and novel strategies for critical transitional periods in life - PREVENT-OO</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#0e7490;color:#fff;">
+          Health & Life Sciences › Preventive Health
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12163COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Understanding and Preventing Overweight and Obesity: Mechanisms of their onset and progression, neglected determinants and novel strategies for critical transitional periods in life - PREVENT-OO</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/11/2025 00:00</span>
+        <span><strong>Deadline:</strong> 21/01/2026 12:00</span>
+        <span><strong>Budget:</strong> €18.9M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-01-27"
+         data-closed="true"
+         data-new="false"
+         data-cat="Health & Life Sciences">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12223?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Multi-country Investigator-Initiated Clinical Trials in Cardiovascular, Autoimmune and Metabolic diseases (Trials4Health) JTC2026</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#0e7490;color:#fff;">
+          Health & Life Sciences › Clinical Research
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12223COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Multi-country Investigator-Initiated Clinical Trials in Cardiovascular, Autoimmune and Metabolic diseases (Trials4Health) JTC2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 06/11/2025 00:00</span>
+        <span><strong>Deadline:</strong> 27/01/2026 16:00</span>
+        <span><strong>Budget:</strong> €32.2M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-02-02"
+         data-closed="true"
+         data-new="false"
+         data-cat="Health & Life Sciences">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12085?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Treatments and Adherence to Treatment protocols</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#0e7490;color:#fff;">
+          Health & Life Sciences › Clinical Research
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12085COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Treatments and Adherence to Treatment protocols</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 18/11/2025 00:00</span>
+        <span><strong>Deadline:</strong> 02/02/2026 13:00</span>
+        <span><strong>Budget:</strong> €31.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-02-05"
+         data-closed="true"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12421?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Europe-Africa Research and Innovation call on Sustainable Energy - 2026</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Renewable Energy & Net Zero
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12421COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Europe-Africa Research and Innovation call on Sustainable Energy - 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 19/11/2025 00:00</span>
+        <span><strong>Deadline:</strong> 05/02/2026 16:00</span>
+        <span><strong>Budget:</strong> €14.5M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-02-11"
+         data-closed="true"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12463?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Accelerating Food Sustainability - through Household Dietary Shifts, Trust and Transparency, and Innovations in Circular Food Processing Systems</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Sustainable Food Systems
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12463COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Accelerating Food Sustainability - through Household Dietary Shifts, Trust and Transparency, and Innovations in Circular Food Processing Systems</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 03/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 11/02/2026 13:00</span>
+        <span><strong>Budget:</strong> €39.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-02-12"
+         data-closed="true"
+         data-new="false"
+         data-cat="Health & Life Sciences">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12661?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">ERDERA Joint Transnational Call 2026: "Resolving unsolved cases in rare genetic and non-genetic diseases”</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#0e7490;color:#fff;">
+          Health & Life Sciences › Rare Diseases
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12661COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> ERDERA Joint Transnational Call 2026: "Resolving unsolved cases in rare genetic and non-genetic diseases”</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 12/02/2026 14:00</span>
+        <span><strong>Budget:</strong> €31.2M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-02-15"
+         data-closed="true"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12621?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">G INP-UGA GreenChips-EDU Scholarship</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12621COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> G INP-UGA GreenChips-EDU Scholarship</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 15/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 15/02/2026 23:59</span>
+        <span><strong>Budget:</strong> €40,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-02-15"
+         data-closed="true"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12447?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">TU Graz GreenChips-EDU Scholarship</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12447COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> TU Graz GreenChips-EDU Scholarship</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 15/02/2026 23:59</span>
+        <span><strong>Budget:</strong> €40,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-03-10"
+         data-closed="true"
+         data-new="false"
+         data-cat="Health & Life Sciences">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12846?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">EP BrainHealth Call 1 | Biological, social and environmental factors that impact the trajectory of brain health across the lifespan – in the field of neurological, mental and sensory disorders</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#0e7490;color:#fff;">
+          Health & Life Sciences › Brain & Mental Health
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12846COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> EP BrainHealth Call 1 | Biological, social and environmental factors that impact the trajectory of brain health across the lifespan – in the field of neurological, mental and sensory disorders</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 08/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 10/03/2026 14:00</span>
+        <span><strong>Budget:</strong> €26.3M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-03-10"
+         data-closed="true"
+         data-new="false"
+         data-cat="Health & Life Sciences">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12845?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">EP BrainHealth Call 2 | Biological, social and environmental factors that impact the trajectory of brain health across the lifespan – in the field of neurodegeneration</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#0e7490;color:#fff;">
+          Health & Life Sciences › Brain & Mental Health
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12845COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> EP BrainHealth Call 2 | Biological, social and environmental factors that impact the trajectory of brain health across the lifespan – in the field of neurodegeneration</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 08/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 10/03/2026 14:00</span>
+        <span><strong>Budget:</strong> €27.5M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-03-16"
+         data-closed="true"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12906?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Civil Drones Innovative Programme</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Aerospace & Drones
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12906COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> Civil Drones Innovative Programme</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 15/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 16/03/2026 17:00</span>
+        <span><strong>Budget:</strong> €1.2M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-03-27"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13042?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call 1 – Financial Support to Third Parties focusing on the Right to Education</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Human Rights
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13042COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Call 1 – Financial Support to Third Parties focusing on the Right to Education</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 27/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 27/03/2026 22:59</span>
+        <span><strong>Budget:</strong> €480,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-03-27"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13001?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call 2 – Financial Support to Third Parties focusing on the Right to Social Security, Assistance and Work.</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Human Rights
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13001COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Call 2 – Financial Support to Third Parties focusing on the Right to Social Security, Assistance and Work.</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 27/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 27/03/2026 23:59</span>
+        <span><strong>Budget:</strong> €630,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-03-27"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13043?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call 3 – Financial Support to Third Parties focusing on Youth Democratic Participation.</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Human Rights
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13043COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Call 3 – Financial Support to Third Parties focusing on Youth Democratic Participation.</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 27/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 27/03/2026 23:59</span>
+        <span><strong>Budget:</strong> €640,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-04-03"
+         data-closed="true"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13161?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">PowerBoost – unlock energy related challenges</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Renewable Energy & Net Zero
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13161COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> PowerBoost – unlock energy related challenges </span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 03/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 03/04/2026 01:59</span>
+        <span><strong>Budget:</strong> €100,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-04-13"
+         data-closed="true"
+         data-new="false"
+         data-cat="Health & Life Sciences">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12982?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Joint Transnational Call 2026 for the BE READY Partnership: Advancing knowledge of host and pathogens dynamics to better combat emerging diseases</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#0e7490;color:#fff;">
+          Health & Life Sciences › Pandemic Preparedness
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12982COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Joint Transnational Call 2026 for the BE READY Partnership: Advancing knowledge of host and pathogens dynamics to better combat emerging diseases</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 19/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 13/04/2026 13:00</span>
+        <span><strong>Budget:</strong> €16.4M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-04-20"
+         data-closed="true"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13324?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call for CSOs initiatives “Code Success” Fund</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Union Values & CSO Support
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13324COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Call for CSOs initiatives “Code Success” Fund</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 16/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 20/04/2026 17:00</span>
+        <span><strong>Budget:</strong> €450,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-04-30"
+         data-closed="true"
+         data-new="false"
+         data-cat="Marine & Mobility">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13726?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Student Entrepreneur Grant Scheme (SEGS)</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1e40af;color:#fff;">
+          Marine & Mobility › Urban Mobility
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13726COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Student Entrepreneur Grant Scheme (SEGS)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/03/2026 00:00</span>
+        <span><strong>Deadline:</strong> 30/04/2026 17:00</span>
+        <span><strong>Budget:</strong> €90,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-05-26"
+         data-closed="true"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13661?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Open Call for innovative projects enhancing the valorisation of agri-food biomass</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Circular Bioeconomy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13661COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> Open Call for innovative projects enhancing the valorisation of agri-food biomass</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 26/03/2026 00:00</span>
+        <span><strong>Deadline:</strong> 26/05/2026 17:00</span>
+        <span><strong>Budget:</strong> €2.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13721?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">NGI Fediversity open call (2026-06F)</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Next Generation Internet
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13721COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> NGI Fediversity open call (2026-06F)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 12:00</span>
+        <span><strong>Budget:</strong> €365,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13727?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">NGI Zero Commons Fund (2026-06Z)</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Next Generation Internet
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13727COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> NGI Zero Commons Fund (2026-06Z)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 12:00</span>
+        <span><strong>Budget:</strong> €6.1M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13722?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">NGI TALER open call (2026-06T)</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Next Generation Internet
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13722COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> NGI TALER open call (2026-06T)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 12:00</span>
+        <span><strong>Budget:</strong> €269,173</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13442?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call for Financial Support for SMEs under DETOUR project</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Sustainable Ecosystems & Tourism
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13442COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> Call for Financial Support for SMEs under DETOUR project</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 09/03/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 12:00</span>
+        <span><strong>Budget:</strong> €800,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13742?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Net Zero Technology - Demo Projects Open Call #1</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Renewable Energy & Net Zero
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13742COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> Net Zero Technology - Demo Projects Open Call #1</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €540,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13681?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">LLM-BRIDGE – Venture Incubation Programme - Open Call for Start-ups – 1st Call</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13681COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> LLM-BRIDGE – Venture Incubation Programme - Open Call for Start-ups – 1st Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €125,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13733?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">JARVIS Open Call #2 - Co-development Track</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13733COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> JARVIS Open Call #2 - Co-development Track</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €800,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-01"
+         data-closed="true"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/10445?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">UPC-MERIT Scholarship for master’s in Machine Learning and Cybersecurity for Internet Connected Systems Open Call 2025</a>
+        
+        
+          <span class="badge-closed">CLOSED</span>
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › Education & Training
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 10445COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> UPC-MERIT Scholarship for master’s in Machine Learning and Cybersecurity for Internet Connected Systems Open Call 2025</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 09/04/2025 00:00</span>
+        <span><strong>Deadline:</strong> 01/06/2026 23:59</span>
+        <span><strong>Budget:</strong> €104,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-07"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13822?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">DIGI-ME Double Degree Scholarship Award Procedure and Selection Rules at UNIPV (University of Pavia)</a>
+        
+        
+          
+            <span class="badge-urgent">5d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13822COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> DIGI-ME Double Degree Scholarship Award Procedure and Selection Rules 
+at UNIPV (University of Pavia)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 08/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 07/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €40,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-08"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13703?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">AIoD OC1-Private Sector</a>
+        
+        
+          
+            <span class="badge-urgent">6d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13703COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> AIoD OC1-Private Sector </span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 08/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 08/06/2026 16:00</span>
+        <span><strong>Budget:</strong> €1.3M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-08"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13821?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">AI4CI Scholarship Grants for Babeş-Bolyai University (Romania)</a>
+        
+        
+          
+            <span class="badge-urgent">6d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13821COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> AI4CI Scholarship Grants for Babeş-Bolyai University (Romania)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 07/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 08/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €34,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-08"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13402?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Open Call for Financial Support to Third parties as a mechanism to test, promote, validate, replicate PRIMARY business model blueprints and develop new value chains</a>
+        
+        
+          
+            <span class="badge-urgent">6d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Circular Bioeconomy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13402COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Open Call for Financial Support to Third parties as a mechanism to test, promote, validate, replicate PRIMARY business model blueprints and develop new value chains</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 09/03/2026 00:00</span>
+        <span><strong>Deadline:</strong> 08/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €900,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-08"
+         data-closed="false"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13804?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Values Open Call for Proposals</a>
+        
+        
+          
+            <span class="badge-urgent">6d left</span>
+          
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Union Values & CSO Support
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13804COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Values Open Call for Proposals </span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 06/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 08/06/2026 23:59</span>
+        <span><strong>Budget:</strong> €1.5M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-09"
+         data-closed="false"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13848?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">BIONetZero Acceleration Programme – Call 1, Stage 1 (Ideation &amp; Travel Grant). Access to stages 2-4 only via stage 1.</a>
+        
+        
+          
+            <span class="badge-urgent">7d left</span>
+          
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Renewable Energy & Net Zero
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13848COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> BIONetZero Acceleration Programme – Call 1, Stage 1 (Ideation & Travel Grant). Access to stages 2-4 only via stage 1. </span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 09/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 09/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €60,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-10"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13783?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">CIRCULOOS Open Call #3.2: Value-Chain Extension &amp; Enhance</a>
+        
+        
+          
+            <span class="badge-urgent">8d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › AI for Industry & Robotics
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13783COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> CIRCULOOS Open Call #3.2: Value-Chain Extension & Enhance</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 08/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 10/06/2026 18:00</span>
+        <span><strong>Budget:</strong> €600,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-14"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13843?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">PRECISEU Open Call</a>
+        
+        
+          
+            <span class="badge-soon">12d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › International R&D Cooperation
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13843COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> PRECISEU Open Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 14/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €11.6M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-15"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13782?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">AI4CI - Fee waivers for Ulm University</a>
+        
+        
+          
+            <span class="badge-soon">13d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13782COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> AI4CI - Fee waivers for Ulm University</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 03/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 15/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €60,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-17"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14241?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">GreenMantis Innovation Support Scheme</a>
+        
+        
+          
+            <span class="badge-soon">15d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Green Industry & Clusters
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14241COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> GreenMantis Innovation Support Scheme </span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 16/03/2026 00:00</span>
+        <span><strong>Deadline:</strong> 17/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €1.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-20"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13863?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">The Digital Humanism Summer School 2026</a>
+        
+        
+          
+            <span class="badge-soon">18d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Summer Schools & Events
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13863COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> The Digital Humanism Summer School 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 20/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 20/06/2026 18:00</span>
+        <span><strong>Budget:</strong> €5,500</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-21"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13862?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Summer School - Digital Leadership, Social Innovations and Resilience in the Digital Society (DigLead)</a>
+        
+        
+          
+            <span class="badge-soon">19d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Summer Schools & Events
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13862COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Summer School - Digital Leadership, Social Innovations and Resilience in the Digital Society (DigLead)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 21/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 21/06/2026 18:00</span>
+        <span><strong>Budget:</strong> €6,600</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-22"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13923?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">DIGI-ME One Semester Exchange Scholarship Award Procedure and Selection Rules at UNIVAASA (University of Vaasa)</a>
+        
+        
+          
+            <span class="badge-soon">20d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13923COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> DIGI-ME One Semester Exchange Scholarship Award Procedure and Selection Rules at UNIVAASA (University of Vaasa)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 23/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 22/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €21,500</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-22"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13922?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">DIGI-ME Double Degree Scholarship Award Procedure and Selection Rules at UNIVAASA (University of Vaasa)</a>
+        
+        
+          
+            <span class="badge-soon">20d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13922COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> DIGI-ME Double Degree Scholarship Award Procedure and Selection Rules at UNIVAASA (University of Vaasa)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 23/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 22/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €41,500</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-23"
+         data-closed="false"
+         data-new="false"
+         data-cat="Marine & Mobility">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13942?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">EIT EdTech Conference Open Call</a>
+        
+        
+          
+            <span class="badge-soon">21d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1e40af;color:#fff;">
+          Marine & Mobility › Urban Mobility
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13942COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> EIT EdTech Conference Open Call
+</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 22/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 23/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €600,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-28"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13981?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">EURIDICE 5th Digital Humanism Summer School 2026</a>
+        
+        
+          
+            <span class="badge-soon">26d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Summer Schools & Events
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13981COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> EURIDICE 5th Digital Humanism Summer School 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 28/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 28/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €13,140</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-28"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13882?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Enhancing the Cybersecurity Capabilities of the Domestic SME Sector (SSNS-NCC-HU-FSTP-2026)</a>
+        
+        
+          
+            <span class="badge-soon">26d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › National Cyber Centres
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13882COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Enhancing the Cybersecurity Capabilities of the Domestic SME Sector (SSNS-NCC-HU-FSTP-2026)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 24/03/2026 00:00</span>
+        <span><strong>Deadline:</strong> 28/06/2026 22:59</span>
+        <span><strong>Budget:</strong> €2.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13901?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">First FIDELIS Open Call for Support for the Adoption of Solutions</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Open Research Infrastructure
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13901COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> First FIDELIS Open Call for Support for the Adoption of Solutions</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €280,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12645?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Recruitment cycle Cohort 2026</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12645COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Recruitment cycle Cohort 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €588,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12644?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Recruitment cycle Cohort 2026</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12644COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Recruitment cycle Cohort 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €270,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12642?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Recruitment cycle Cohort 2026</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12642COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Recruitment cycle Cohort 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €432,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12643?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Recruitment cycle Cohort 2026</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12643COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Recruitment cycle Cohort 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €546,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12646?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Recruitment cycle Cohort 2026</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12646COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Recruitment cycle Cohort 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €588,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11762?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Open Call for the selection of EEN organisations delivering IRS Awareness and Support Services</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › International R&D Cooperation
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11762COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Open Call for the selection of EEN organisations delivering IRS Awareness and Support Services</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 17/09/2025 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 17:00</span>
+        <span><strong>Budget:</strong> €4.4M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13761?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Open Call 1 addressed to research and technology stakeholders</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Sustainable Food Systems
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13761COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Open Call 1 addressed to research and technology stakeholders</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 07/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 18:00</span>
+        <span><strong>Budget:</strong> €400,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13803?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">VIC FSTP - ISTEC Summer School Scholarships 2025-2026</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Summer Schools & Events
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13803COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> VIC FSTP - ISTEC Summer School Scholarships 2025-2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 18:59</span>
+        <span><strong>Budget:</strong> €2,500</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/8123?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">VILNIUS TECH MERIT Project Excellence Scholarship and Mobility Grant Award Call</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 8123COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> VILNIUS TECH MERIT Project Excellence Scholarship  and Mobility Grant Award Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 19/08/2024 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 19:00</span>
+        <span><strong>Budget:</strong> €21,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13381?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">AI4Gov-X Cascade Funding Call - first edition [AI4Gov-X-FSTP-CALL-01-2026]</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13381COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> AI4Gov-X Cascade Funding Call - first edition [AI4Gov-X-FSTP-CALL-01-2026]</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 23:59</span>
+        <span><strong>Budget:</strong> €980,774</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-06-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13982?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">POLITO GreenChips-EDU Scholarship</a>
+        
+        
+          
+            <span class="badge-soon">28d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13982COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> POLITO GreenChips-EDU Scholarship</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 30/06/2026 23:59</span>
+        <span><strong>Budget:</strong> €10,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13987?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">GUARDIANS Test Before Invest Open Call</a>
+        
+        
+          
+            <span class="badge-soon">29d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Smart Farming
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13987COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> GUARDIANS Test Before Invest Open Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €90,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13983?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call for applications for grant to support the enhancement of the cyber resilience of products</a>
+        
+        
+          
+            <span class="badge-soon">29d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › Critical Infrastructure
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13983COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Call for applications for grant to support the enhancement of the cyber resilience of products</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/07/2026 18:00</span>
+        <span><strong>Budget:</strong> €318,720</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13985?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">TUDa GreenChips-EDU Scholarship</a>
+        
+        
+          
+            <span class="badge-soon">29d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Scholarships & Fellowships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13985COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> TUDa GreenChips-EDU Scholarship</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 30/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/07/2026 23:59</span>
+        <span><strong>Budget:</strong> €40,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-06"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14002?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Advanced Materials Innovation Open Call</a>
+        
+        
+          
+            <span class="badge-open">34d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Advanced Manufacturing
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14002COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> Advanced Materials Innovation Open Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 06/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 06/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €1.2M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-06"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14021?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Open Call for Farmers to participate in the TRAILS4SOIL Project</a>
+        
+        
+          
+            <span class="badge-open">34d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Smart Farming
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14021COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Open Call for Farmers to participate in the TRAILS4SOIL Project</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 06/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 06/07/2026 23:59</span>
+        <span><strong>Budget:</strong> €735,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-07"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14023?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Scaling Green Innovation with Industry – Growth Box Call</a>
+        
+        
+          
+            <span class="badge-open">35d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Green Industry & Clusters
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14023COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> Scaling Green Innovation with Industry – Growth Box Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 07/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 07/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €1.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-07"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11268?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">AMU Scholarships for the internship of the Master 2 « Biology &amp; Health », study-track « AI and biomarkers » within the European Project « Advanced Digital Skills AI and Health ».</a>
+        
+        
+          
+            <span class="badge-open">35d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Internships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11268COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> AMU Scholarships for the internship of the Master 2 « Biology & Health », study-track « AI and biomarkers » within the European Project « Advanced Digital Skills AI and Health ».</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 04/07/2025 00:00</span>
+        <span><strong>Deadline:</strong> 07/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €210,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-09"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13962?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Open Call 1: Penetration Testing Scenarios Development</a>
+        
+        
+          
+            <span class="badge-open">37d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › Critical Infrastructure
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13962COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Open Call 1: Penetration Testing Scenarios Development</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 08/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 09/07/2026 15:00</span>
+        <span><strong>Budget:</strong> €720,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-09"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13462?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">ODEON Open Call</a>
+        
+        
+          
+            <span class="badge-open">37d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13462COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> ODEON Open Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 08/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 09/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €1.2M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-10"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13741?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">JARVIS Open Call #2 - External Pilots Track</a>
+        
+        
+          
+            <span class="badge-open">38d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13741COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> JARVIS Open Call #2 - External Pilots Track</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 10/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €650,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-13"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14063?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">RESIST II PROCESS INNOVATION OPEN CALL</a>
+        
+        
+          
+            <span class="badge-open">41d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Advanced Manufacturing
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14063COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> RESIST II PROCESS INNOVATION OPEN CALL</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 13/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €800,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-13"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14062?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">RESIST II PRODUCT INNOVATION OPEN CALL</a>
+        
+        
+          
+            <span class="badge-open">41d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Advanced Manufacturing
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14062COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> RESIST II PRODUCT INNOVATION OPEN CALL</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 13/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €800,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-13"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14164?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Third Call for Pilots Work Strand 1 - Connecting Existing Local Digital Twins</a>
+        
+        
+          
+            <span class="badge-open">41d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Digital Twins
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14164COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Third Call for Pilots Work Strand 1 - Connecting Existing Local Digital Twins</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 13/07/2026 23:59</span>
+        <span><strong>Budget:</strong> €2.4M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-13"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14165?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Third Call for Pilots Work Strand 2 - LDTs Based on Common Needs</a>
+        
+        
+          
+            <span class="badge-open">41d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Digital Twins
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14165COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Third Call for Pilots Work Strand 2 - LDTs Based on Common Needs</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 13/07/2026 23:59</span>
+        <span><strong>Budget:</strong> €3.2M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-13"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14166?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Third Call for Pilots Work Strand 3 - New Advanced AI-Based Tools to the LDTs Toolbox</a>
+        
+        
+          
+            <span class="badge-open">41d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Digital Twins
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14166COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Third Call for Pilots Work Strand 3 - New Advanced AI-Based Tools to the LDTs Toolbox</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 13/07/2026 23:59</span>
+        <span><strong>Budget:</strong> €2.9M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-15"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14143?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">AID4SME Open Call 2</a>
+        
+        
+          
+            <span class="badge-open">43d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14143COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> AID4SME Open Call 2</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 15/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 15/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €2.4M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-16"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13961?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Cyberactioning FSTP Call – Graduation Week Mobility Grants 2026 (MICAC Cohort 1)</a>
+        
+        
+          
+            <span class="badge-open">44d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › Education & Training
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13961COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Cyberactioning FSTP Call – Graduation Week Mobility Grants 2026 (MICAC Cohort 1)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 13/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 16/07/2026 12:00</span>
+        <span><strong>Budget:</strong> €13,200</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-20"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14161?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">COSMIC 2nd Open Call: AI &amp; Data Solutions to Boost the Green Transition</a>
+        
+        
+          
+            <span class="badge-open">48d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › AI & Machine Learning
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14161COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> COSMIC 2nd Open Call: AI & Data Solutions to Boost the Green Transition
+</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 20/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 20/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €1.9M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-30"
+         data-closed="false"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14261?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">PowerUp NetZero Open Call for Business Innovation and Technology Adoption Services</a>
+        
+        
+          
+            <span class="badge-open">58d left</span>
+          
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Renewable Energy & Net Zero
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14261COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> PowerUp NetZero Open Call for Business Innovation and Technology Adoption Services</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 21/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 30/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €380,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14381?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">BIOECONOMY GIANTS Open Call for Travel Vouchers (OC1)</a>
+        
+        
+          
+            <span class="badge-open">59d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Circular Bioeconomy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14381COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> BIOECONOMY GIANTS Open Call for Travel Vouchers (OC1)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 31/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €20,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14242?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">ELEVATEX Open Call 2026</a>
+        
+        
+          
+            <span class="badge-open">59d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Green Industry & Clusters
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14242COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43252476</span>
+        <span><strong>Authority:</strong> ELEVATEX Open Call 2026</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 31/07/2026 17:00</span>
+        <span><strong>Budget:</strong> €600,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14124?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">AGRI-BIOCIRCULAR-HUB Open Call</a>
+        
+        
+          
+            <span class="badge-open">59d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Circular Bioeconomy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14124COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> AGRI-BIOCIRCULAR-HUB Open Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 22/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 31/07/2026 18:00</span>
+        <span><strong>Budget:</strong> €600,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-07-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/10401?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">InnoNext - Next Generation Innovation Talents' Initiative</a>
+        
+        
+          
+            <span class="badge-open">59d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Startup & Entrepreneurship
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 10401COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> InnoNext - Next Generation Innovation Talents' Initiative</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 17/03/2025 00:00</span>
+        <span><strong>Deadline:</strong> 31/07/2026 23:59</span>
+        <span><strong>Budget:</strong> €15,900</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-08-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14463?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">NGI Fediversity open call (2026-08F)</a>
+        
+        
+          
+            <span class="badge-open">60d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Next Generation Internet
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14463COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> NGI Fediversity open call (2026-08F)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/08/2026 12:00</span>
+        <span><strong>Budget:</strong> €152,560</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-08-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14382?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Strengthening and Expanding Living Labs with Additional Experimental Sites</a>
+        
+        
+          
+            <span class="badge-open">60d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Smart Farming
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14382COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Strengthening and Expanding Living Labs with Additional Experimental Sites</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/08/2026 18:00</span>
+        <span><strong>Budget:</strong> €500,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-08-14"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14401?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">C4B Open Call for Pilot Projects</a>
+        
+        
+          
+            <span class="badge-open">73d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Circular Bioeconomy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14401COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> C4B Open Call for Pilot Projects</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 14/08/2026 17:00</span>
+        <span><strong>Budget:</strong> €480,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-08-15"
+         data-closed="false"
+         data-new="false"
+         data-cat="AI & Digital Technologies">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11302?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">DIGITWIN4CIUE project-Scholarships for the Executive Master in Digital Twins on Infrastructures and Cities</a>
+        
+        
+          
+            <span class="badge-open">74d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1d4ed8;color:#fff;">
+          AI & Digital Technologies › Digital Twins
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11302COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> DIGITWIN4CIUE project-Scholarships for the Executive Master in Digital Twins on Infrastructures and Cities</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 10/07/2025 00:00</span>
+        <span><strong>Deadline:</strong> 15/08/2026 23:00</span>
+        <span><strong>Budget:</strong> €400,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-08-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14101?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">FS4Africa Open Call 2 (OC2) addressed to innovation hubs</a>
+        
+        
+          
+            <span class="badge-open">90d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Sustainable Food Systems
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14101COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> FS4Africa Open Call 2 (OC2) addressed to innovation hubs</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 18/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 31/08/2026 17:00</span>
+        <span><strong>Budget:</strong> €200,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/7622?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">DigiQ Exchange Program</a>
+        
+        
+          
+            <span class="badge-open">91d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Summer Schools & Events
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 7622COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong>  DigiQ Exchange Program</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/02/2025 00:00</span>
+        <span><strong>Deadline:</strong> 01/09/2026 17:00</span>
+        <span><strong>Budget:</strong> €200,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/7621?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Funding to Attend DigiQ Networking Events</a>
+        
+        
+          
+            <span class="badge-open">91d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Summer Schools & Events
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 7621COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong>  Funding to Attend DigiQ Networking Events</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/02/2025 00:00</span>
+        <span><strong>Deadline:</strong> 01/09/2026 17:00</span>
+        <span><strong>Budget:</strong> €925,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Education & Digital Skills">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/7623?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">DigiQ Internships</a>
+        
+        
+          
+            <span class="badge-open">91d left</span>
+          
+        
+        <span class="cat-badge" style="background:#6d28d9;color:#fff;">
+          Education & Digital Skills › Internships
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 7623COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong>  DigiQ Internships</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 31/01/2025 00:00</span>
+        <span><strong>Deadline:</strong> 01/09/2026 17:00</span>
+        <span><strong>Budget:</strong> €925,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14081?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">EFCSN Temporary Call for Protection Grants</a>
+        
+        
+          
+            <span class="badge-open">91d left</span>
+          
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Emergency Response
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14081COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> EFCSN Temporary Call for Protection Grants</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 01/09/2026 23:59</span>
+        <span><strong>Budget:</strong> €80,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-03"
+         data-closed="false"
+         data-new="false"
+         data-cat="Marine & Mobility">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14421?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Master School and Fellowship Open Call 2027</a>
+        
+        
+          
+            <span class="badge-open">93d left</span>
+          
+        
+        <span class="cat-badge" style="background:#1e40af;color:#fff;">
+          Marine & Mobility › Urban Mobility
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14421COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Master School and Fellowship Open Call 2027</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 27/05/2026 00:00</span>
+        <span><strong>Deadline:</strong> 03/09/2026 17:00</span>
+        <span><strong>Budget:</strong> €1.4M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-10"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13405?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">European Partnership on Innovative SMEs/Eurostars: joint transnational call for proposals (CALL 11 of Eurostars-3)</a>
+        
+        
+          
+            <span class="badge-open">100d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › International R&D Cooperation
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13405COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> European Partnership on Innovative SMEs/Eurostars: joint transnational call for proposals (CALL 11 of Eurostars-3)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 09/07/2026 00:00</span>
+        <span><strong>Deadline:</strong> 10/09/2026 14:00</span>
+        <span><strong>Budget:</strong> €87.7M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-15"
+         data-closed="false"
+         data-new="false"
+         data-cat="Food, Agriculture & Bioeconomy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14201?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">SMART ERA 2nd Open Call for Followers Micro-Pilots</a>
+        
+        
+          
+            <span class="badge-open">105d left</span>
+          
+        
+        <span class="cat-badge" style="background:#92400e;color:#fff;">
+          Food, Agriculture & Bioeconomy › Smart Farming
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14201COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> SMART ERA 2nd Open Call for Followers Micro-Pilots</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 12/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 15/09/2026 13:00</span>
+        <span><strong>Budget:</strong> €90,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-16"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/14402?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Women TechEU Open Call</a>
+        
+        
+          
+            <span class="badge-open">106d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › Startup & Entrepreneurship
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 14402COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> Women TechEU Open Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 01/06/2026 00:00</span>
+        <span><strong>Deadline:</strong> 16/09/2026 17:00</span>
+        <span><strong>Budget:</strong> €12.0M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-09-17"
+         data-closed="false"
+         data-new="false"
+         data-cat="Industry, Manufacturing & SMEs">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13881?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">RIVCircular Open Call for Interregional Circular Economy Innovation Proposals</a>
+        
+        
+          
+            <span class="badge-open">107d left</span>
+          
+        
+        <span class="cat-badge" style="background:#c2410c;color:#fff;">
+          Industry, Manufacturing & SMEs › International R&D Cooperation
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13881COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43108390</span>
+        <span><strong>Authority:</strong> RIVCircular Open Call for Interregional Circular Economy Innovation Proposals</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 20/04/2026 00:00</span>
+        <span><strong>Deadline:</strong> 17/09/2026 14:00</span>
+        <span><strong>Budget:</strong> €12.3M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-12-02"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12843?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Innovation Funding for Estonian Cybersecurity Companies for developing innovative, high value-added products and services</a>
+        
+        
+          
+            <span class="badge-open">183d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › National Cyber Centres
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12843COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Innovation Funding for Estonian Cybersecurity Companies for developing innovative, high value-added products and services</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 12/01/2026 00:00</span>
+        <span><strong>Deadline:</strong> 02/12/2026 04:00</span>
+        <span><strong>Budget:</strong> €1.5M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-12-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13328?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">FuseNet Call for the Organisation of Mini-Workshops in Fusion</a>
+        
+        
+          
+            <span class="badge-open">212d left</span>
+          
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Fusion Energy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13328COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43298916</span>
+        <span><strong>Authority:</strong> FuseNet Call for the Organisation of Mini-Workshops in Fusion</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 18/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 31/12/2026 23:59</span>
+        <span><strong>Budget:</strong> €10,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-12-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13326?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">FuseNet Support of Master Students in attending Educational Events</a>
+        
+        
+          
+            <span class="badge-open">212d left</span>
+          
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Fusion Energy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13326COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43298916</span>
+        <span><strong>Authority:</strong> FuseNet Support of Master Students in attending Educational Events</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 18/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 31/12/2026 23:59</span>
+        <span><strong>Budget:</strong> €25,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2026-12-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Clean Energy & Climate">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/13327?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">FuseNet Support of Master Students going on an internship abroad</a>
+        
+        
+          
+            <span class="badge-open">212d left</span>
+          
+        
+        <span class="cat-badge" style="background:#166534;color:#fff;">
+          Clean Energy & Climate › Fusion Energy
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 13327COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43298916</span>
+        <span><strong>Authority:</strong> FuseNet Support of Master Students going on an internship abroad</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 18/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 31/12/2026 23:59</span>
+        <span><strong>Budget:</strong> €100,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2027-02-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12743?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">A running call No. 5 for bilateral cooperation project proposals</a>
+        
+        
+          
+            <span class="badge-open">244d left</span>
+          
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Union Values & CSO Support
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12743COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> A running call No. 5 for bilateral cooperation project proposals</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 17/12/2025 00:00</span>
+        <span><strong>Deadline:</strong> 01/02/2027 00:59</span>
+        <span><strong>Budget:</strong> €100,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2027-02-03"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12904?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Phortify Mobility Grants - Pilot Call</a>
+        
+        
+          
+            <span class="badge-open">246d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › Education & Training
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12904COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Phortify Mobility Grants - Pilot Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 04/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 03/02/2027 23:59</span>
+        <span><strong>Budget:</strong> €18,200</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2027-02-03"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12905?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Phortify Grants for Master Thesis Project - Pilot Call</a>
+        
+        
+          
+            <span class="badge-open">246d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › Education & Training
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12905COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Phortify Grants for Master Thesis Project - Pilot Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 04/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 03/02/2027 23:59</span>
+        <span><strong>Budget:</strong> €6,300</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2027-02-03"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12902?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Phortify Internship (Traineeship) Grants - Pilot Call</a>
+        
+        
+          
+            <span class="badge-open">246d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › Education & Training
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 12902COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Phortify Internship (Traineeship) Grants - Pilot Call</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 04/02/2026 00:00</span>
+        <span><strong>Deadline:</strong> 03/02/2027 23:59</span>
+        <span><strong>Budget:</strong> €91,800</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2027-07-02"
+         data-closed="false"
+         data-new="false"
+         data-cat="Cybersecurity">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/10941?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Financial support for start-ups registered in Estonia for developing new cybersecurity tools or services (Cyber Accelerator)</a>
+        
+        
+          
+            <span class="badge-open">395d left</span>
+          
+        
+        <span class="cat-badge" style="background:#991b1b;color:#fff;">
+          Cybersecurity › National Cyber Centres
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 10941COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43152860</span>
+        <span><strong>Authority:</strong> Financial support for start-ups registered in Estonia for developing new cybersecurity tools or services (Cyber Accelerator)</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 12/05/2025 00:00</span>
+        <span><strong>Deadline:</strong> 02/07/2027 20:00</span>
+        <span><strong>Budget:</strong> €1.1M</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2028-01-01"
+         data-closed="false"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11674?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">Call for proposal for support to Slovenian and Croatian SCOs to “Go out and vote!” campaigns</a>
+        
+        
+          
+            <span class="badge-open">578d left</span>
+          
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Civic Engagement
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11674COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong> Call for proposal for support to Slovenian and Croatian SCOs to “Go out and vote!” campaigns</span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 05/09/2025 00:00</span>
+        <span><strong>Deadline:</strong> 01/01/2028 17:00</span>
+        <span><strong>Budget:</strong> €100,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+    
+    
+    
+    <div class="call"
+         data-deadline="2028-03-31"
+         data-closed="false"
+         data-new="false"
+         data-cat="Civil Society & Democracy">
+      <h3>
+        <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11702?isExactMatch=true&status=31094502,31094501&programmePeriod=2021%20-%202027&type=8&order=DESC&pageNumber=1&pageSize=100&sortBy=startDate" target="_blank">ReAction – Rapid Response Grants</a>
+        
+        
+          
+            <span class="badge-open">668d left</span>
+          
+        
+        <span class="cat-badge" style="background:#be185d;color:#fff;">
+          Civil Society & Democracy › Emergency Response
+        </span>
+      </h3>
+      <div class="meta">
+        <span><strong>Ref:</strong> 11702COMPETITIVE_CALLen</span>
+        <span><strong>Programme:</strong> 43251589</span>
+        <span><strong>Authority:</strong>  ReAction – Rapid Response Grants </span>
+      </div>
+      <div class="meta">
+        <span><strong>Opens:</strong> 11/09/2025 00:00</span>
+        <span><strong>Deadline:</strong> 31/03/2028 18:00</span>
+        <span><strong>Budget:</strong> €300,000</span>
+        <span><strong>First seen:</strong> 2026-06-01</span>
+      </div>
+    </div>
+    
+  </div>
+
+  <script>
+    let currentCat = 'all';
+
+    const CAT_COLORS = {"AI \u0026 Digital Technologies": "#1d4ed8", "Civil Society \u0026 Democracy": "#be185d", "Clean Energy \u0026 Climate": "#166534", "Cybersecurity": "#991b1b", "Education \u0026 Digital Skills": "#6d28d9", "Food, Agriculture \u0026 Bioeconomy": "#92400e", "Health \u0026 Life Sciences": "#0e7490", "Industry, Manufacturing \u0026 SMEs": "#c2410c", "Marine \u0026 Mobility": "#1e40af", "Uncategorised": "#6b7280"};
+
+    function applyFilters() {
+      document.querySelectorAll('#calls-container .call').forEach(card => {
+        const cat = card.dataset.cat;
+        card.classList.toggle('hidden', currentCat !== 'all' && cat !== currentCat);
+      });
+    }
+
+    function filterCat(cat, btn) {
+      currentCat = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.opacity = '0.55';
+      });
+      btn.classList.add('active');
+      btn.style.opacity = '1';
+      applyFilters();
+    }
+
+    function sortCalls(order, btn) {
+      document.querySelectorAll('.btn:not(.cat-btn)').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const container = document.getElementById('calls-container');
+      const cards = Array.from(container.querySelectorAll('.call'));
+
+      cards.sort((a, b) => {
+        const aClosed = a.dataset.closed === 'true';
+        const bClosed = b.dataset.closed === 'true';
+        const aNew    = a.dataset.new === 'true';
+        const bNew    = b.dataset.new === 'true';
+
+        if (order === 'new') {
+          if (aNew !== bNew) return aNew ? -1 : 1;
+          if (aClosed !== bClosed) return aClosed ? 1 : -1;
+          return (a.dataset.deadline || '').localeCompare(b.dataset.deadline || '');
+        }
+
+        if (aClosed !== bClosed) return aClosed ? 1 : -1;
+        const da = a.dataset.deadline || '';
+        const db = b.dataset.deadline || '';
+        if (!da && !db) return 0;
+        if (!da) return 1;
+        if (!db) return -1;
+        return order === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
+      });
+
+      cards.forEach(card => container.appendChild(card));
+    }
+
+    // Init
+    document.querySelectorAll('.cat-btn').forEach(b => {
+      if (!b.classList.contains('active')) b.style.opacity = '0.55';
+    });
+    sortCalls('new', document.querySelector('.btn:not(.cat-btn).active'));
+  </script>
+</body>
+</html>
